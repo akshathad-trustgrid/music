@@ -1,7 +1,7 @@
 const axios = require("axios");
 
-const RAPID_API_KEY = "c927c33f02msh5fb261340ddba68p1bcb72jsnc5f149750eed";
-const RAPID_API_HOST = "deezerdevs-deezer.p.rapidapi.com";
+const RAPID_API_KEY = process.env.RAPID_API_KEY;
+const RAPID_API_HOST = process.env.RAPID_API_HOST;
 
 exports.searchTracks = async (query) => {
   try {
@@ -10,8 +10,8 @@ exports.searchTracks = async (query) => {
       {
         params: { q: query },
         headers: {
-          "X-RapidAPI-Key": RAPID_API_KEY,
-          "X-RapidAPI-Host": RAPID_API_HOST
+          "X-RapidAPI-Key": process.env.RAPID_API_KEY,
+          "X-RapidAPI-Host": process.env.RAPID_API_HOST
         }
       }
     );
@@ -20,7 +20,10 @@ exports.searchTracks = async (query) => {
       trackId: track.id,
       title: track.title,
       artist: track.artist.name,
-      previewUrl: track.preview
+      previewUrl: track.preview,
+      cover: track.album.cover_medium,
+      duration: track.duration,
+      
     }));
 
   } catch (err) {
@@ -35,16 +38,30 @@ exports.getTrackPreview = async (trackId) => {
       `https://deezerdevs-deezer.p.rapidapi.com/track/${trackId}`,
       {
         headers: {
-          "X-RapidAPI-Key": RAPID_API_KEY,
-          "X-RapidAPI-Host": RAPID_API_HOST
+          "X-RapidAPI-Key": process.env.RAPID_API_KEY,
+          "X-RapidAPI-Host": process.env.RAPID_API_HOST
         }
       }
     );
 
-    return response.data.preview;
+    return response.data.preview;// Always fetch fresh preview URL to ensure it's valid
 
   } catch (err) {
     console.error("Preview error:", err.message);
     throw err;
   }
+};
+
+exports.fetchTrackDetails = async (trackId) => {
+  const response = await axios.get(
+    `https://deezerdevs-deezer.p.rapidapi.com/track/${trackId}`,
+    {
+      headers: {
+        "X-RapidAPI-Key": process.env.RAPID_API_KEY,
+        "X-RapidAPI-Host": process.env.RAPID_API_HOST
+      }
+    }
+  );
+
+  return response.data;
 };

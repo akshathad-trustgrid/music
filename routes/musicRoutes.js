@@ -1,12 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const musicController = require("../controllers/musicController");
 
-const { searchMusic } = require("../controllers/musicController");
-const { trimMusic } = require("../controllers/processController");
+//const { searchMusic } = require("../controllers/musicController");
 
-router.get("/search", searchMusic);
-
-// New clean endpoint for trimming audio preview
-router.post("/trim", trimMusic);
+router.get("/search", musicController.searchMusic);
+router.post("/save/:trackId", musicController.saveTrackPreview);
 
 module.exports = router;
