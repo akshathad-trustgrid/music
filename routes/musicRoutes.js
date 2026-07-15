@@ -4,6 +4,14 @@ const musicController = require("../controllers/musicController");
 
 //const { searchMusic } = require("../controllers/musicController");
 
+// Health check endpoint
+router.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Music Service is running"
+  });
+});
+
 router.get("/search", musicController.searchMusic);
 router.post("/save/:trackId", musicController.saveTrackPreview);
 
