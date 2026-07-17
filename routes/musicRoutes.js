@@ -13,6 +13,7 @@ router.get("/health", (req, res) => {
 });
 
 router.get("/search", musicController.searchMusic);
-router.post("/save/:trackId", musicController.saveTrackPreview);
-
+router.get("/preview/:trackId", musicController.getTrackPreview);
+router.post("/trim/:trackId", musicController.trimTrack);
+//router.post("/save/:trackId", musicController.saveTrackPreview);
 module.exports = router;

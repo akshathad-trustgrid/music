@@ -2,7 +2,9 @@ const path = require("path");
 const fs = require("fs");
 const { searchTracks } = require("../services/deezerService");
 const { fetchTrackDetails } = require("../services/deezerService");
-const PREVIEW_DIR = path.join(__dirname, "../storage/music");
+const { getTrackPreview } = require("../services/deezerService");
+const musicService = require("../services/musicService");
+//const PREVIEW_DIR = path.join(__dirname, "../storage/music");
 const axios = require("axios");
 
 exports.searchMusic = async (req, res) => {
@@ -18,7 +20,72 @@ exports.searchMusic = async (req, res) => {
   }
 };
 
-exports.saveTrackPreview = async (req, res) => {
+exports.getTrackPreview = async (req, res) => {
+  try {
+    const { trackId } = req.params;
+
+    if (!trackId) {
+      return res.status(400).json({
+        error: "Track ID is required"
+      });
+    }
+
+    const previewUrl = await getTrackPreview(trackId);
+
+    return res.status(200).json({
+      success: true,
+      trackId,
+      previewUrl
+    });
+
+  } catch (err) {
+    console.error("Error fetching track preview:", err.message);
+
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch track preview"
+    });
+  }
+};
+
+exports.trimTrack = async (req, res) => {
+  try {
+    const { trackId } = req.params;
+    const { startTime = 0, duration = 10 } = req.body;
+
+    const result = await musicService.trimTrack(
+      trackId,
+      Number(startTime),
+      Number(duration)
+    );
+
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${result.fileName}"`
+    );
+
+    const stream = fs.createReadStream(result.filePath);
+
+    stream.pipe(res);
+
+    stream.on("close", () => {
+      if (fs.existsSync(result.filePath)) {
+        fs.unlinkSync(result.filePath);
+      }
+    });
+
+  } catch (err) {
+    console.error("Trim track error:", err);
+
+    res.status(500).json({
+      success: false,
+      error: "Failed to trim track"
+    });
+  }
+};
+
+/*exports.saveTrackPreview = async (req, res) => {
   try {
     const { trackId } = req.params;
 
@@ -50,4 +117,4 @@ exports.saveTrackPreview = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+};*/
